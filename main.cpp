@@ -146,7 +146,7 @@ void imprimir_catalogo(){
     for (int i = 0; i < 24; i++)
     {
         Producto prod = catalogo[i];
-        cout<< "\n"<<(i+1) <<prod.nombre << ": Q." << prod.precio <<endl;
+        cout<< (i+1)<<". " <<prod.nombre << ": Q." << prod.precio <<endl;
     }
     cout << "---------------------------------------------------------------------------------------------" << endl;
 }
@@ -238,15 +238,10 @@ int main(){
             cant_clientes++;
         }
         else{
-            
             cont = false;
         }
         
 
     }
     
-
-    cout << "\nSu pedido ha sido enviado a: " << clientes[0].direccion_entrega << endl;
-    cout << "Su pedido ha sido enviado a: " << clientes[0].nombre << endl;
-
 }
