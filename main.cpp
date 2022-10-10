@@ -8,8 +8,8 @@ Actividad: Proyecto 2
 
 Integrantes: 
 Jimena Hernández 21199
-Mark Albrand 
-Diego Morales
+Mark Albrand 21004
+Diego Morales 21146
 Javier Azurdia 21242
             
 Descripción: Programa simulador de entregas de repartidores.
@@ -18,6 +18,7 @@ Descripción: Programa simulador de entregas de repartidores.
 #include <iostream>
 #include <cstdlib> // para el random 
 using namespace std;
+#define NTHREADS 4 //  hilos a crear
 int cantidadClientes;
 
 struct Producto{
@@ -185,6 +186,18 @@ void* repartir(void *args){
 
 
 int main(){
+
+int rc;
+  long i;
+  // Declarar una variable tipo pthread_t
+  pthread_t tid[NTHREADS];
+
+  pthread_attr_t attr;  //atributos de los hilos
+
+  pthread_attr_init(&attr); //inicializar los atributos de los hilos
+
+  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE); //crear los hilos como joinable (se pueden unir)
+
     // Variables
     int cant_clientes = 1;
     bool cont = true;
