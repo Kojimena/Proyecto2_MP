@@ -1,4 +1,4 @@
-/* 
+/*************************************************************************
 UNIVERSIDAD DEL VALLE DE GUATEMALA
 FACULTAD DE INGENIERÍA
 DEPARTAMENTO DE CIENCIA DE LA COMPUTACIÓN
@@ -13,7 +13,7 @@ Diego Morales 21146
 Javier Azurdia 21242
             
 Descripción: Programa simulador de entregas de repartidores.
- */
+ ***********************************************************************/
 
 #include <iostream>
 #include <cstdlib> // para el random 
