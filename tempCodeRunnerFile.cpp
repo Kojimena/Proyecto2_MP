@@ -1,1 +1,1 @@
-imprimir_catalogo();
+totalProductos
