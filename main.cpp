@@ -17,14 +17,14 @@ Descripción: Programa simulador de entregas de repartidores.
 
 #include <iostream>
 #include <cstdlib> // para el random 
-using namespace std;
 #define NTHREADS 4 //  hilos a crear
+using namespace std;
 int cantidadClientes;
 
 struct Producto{
     string nombre;
     int cantidad;
-    float precio;
+    double precio;
 };
 
 struct Cliente{
@@ -64,6 +64,176 @@ Producto catalogo[] = {
     {"Vodka Smirnoff 750 ml", 0, 130.00}
 };
 
+int determinar_distancia(int zona);
+
+
+void imprimir_catalogo(){
+    cout << "------------------------------------CATÁLOGO DE PRODUCTOS------------------------------------" << endl;
+    for (int i = 0; i < 24; i++)
+    {
+        Producto prod = catalogo[i];
+        cout<< (i+1)<<". " <<prod.nombre << ": Q." << prod.precio <<endl;
+    }
+    cout << "---------------------------------------------------------------------------------------------" << endl;
+}
+
+//funcion para calcular el total de productos vendidos y el total de dinero
+void* totalVendido(void *args){ // recibe como parámetros struct Cliente
+    Cliente *cliente = (Cliente*) args;
+    float total = 0;
+    int totalProductos = 0;
+    for(int i = 0; i < cliente->cantidadProductos; i++){
+        total += cliente->productos[i].precio * cliente->productos[i].cantidad;
+        totalProductos += cliente->productos[i].cantidad;
+    }
+    cout << "Total de productos vendidos: " << totalProductos << endl;
+    cout << "Total de ganancias: " << total << endl;
+}
+
+void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente 
+    
+    Cliente *cliente = (Cliente*) args;
+    
+    // obtener la zona_entrega del struct
+    int zona = cliente->zona_entrega;
+    int distancia = determinar_distancia(zona);
+    if (distancia == -1){
+        cout << "Zona sin cobertura" << endl;
+        return NULL;
+    }else{
+        int eventorand = 5 - rand() % 10 + 1; // velocidad aleatoria entre -5 y 5
+        int velocidad = 60;
+        int tiempo = (distancia / velocidad) + eventorand;
+        cliente->tiempo = tiempo; // se guarda el tiempo en el struct
+        cout << "Tiempo de entrega: " << tiempo << " minutos" << endl;
+    }
+}
+
+// Subrutina principal para simular las actividades de cada moto de manera individual
+void* repartir(void *args){
+    
+}
+
+
+int main(){
+
+    int rc;
+    long i;
+    // Declarar una variable tipo pthread_t
+    pthread_t tid[NTHREADS];
+
+    pthread_attr_t attr;  //atributos de los hilos
+
+    pthread_attr_init(&attr); //inicializar los atributos de los hilos
+
+    pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE); //crear los hilos como joinable (se pueden unir)
+
+    // Variables
+    int cant_clientes = 1;
+    bool cont = true;
+    int opcion;
+
+    // HIlos
+
+    //Se declara un array de tamaño dinámico para la cantidad de clientes.
+    Cliente* clientes = (Cliente*)malloc(sizeof(Cliente)*cant_clientes);
+    cout << "\nBienvenido a PanaPedidos\n" << endl;    
+    
+    while (cont)
+    {
+        Cliente cliente;
+        cout<<"Ingrese su nombre: "<<endl;
+        cin>>cliente.nombre;
+        cout << "Ingrese el número de la zona de entrega: " << endl;
+        cin >> cliente.zona_entrega;
+        cout<<"Ingrese su direccion de entrega: "<<endl;
+        cin>>cliente.direccion_entrega;
+        
+
+        // Pedir la orden
+        imprimir_catalogo();
+        
+        int cant_prod = 0;
+        cout<<"\nElija un máximo de 10 productos, ingresando su identificador.\n  Para finalizar ingrese 0. "<<endl;
+        for (int i = 0; i < 10; i++)
+        {
+            int id = 0;
+            cin >> id;
+
+            if(id == 0){
+                break;  // Salir del IF
+            }
+            cant_prod++;
+
+            Producto prod = catalogo[id - 1]; // Se obtiene el producto del catalogo
+            cliente.productos[i] = prod; // Se agrega el producto al cliente
+        }
+        cliente.cantidadProductos = cant_prod;
+        
+        cout << "Su orden contiene los siguientes productos: " << endl;
+        for (int i = 0; i < cant_prod; i++)
+        {
+            Producto prod = cliente.productos[i];
+            cout << prod.nombre << ": Q." << prod.precio << endl;
+        }
+        
+        
+        clientes[cant_clientes - 1] = cliente;
+
+        // Generar cantidad de clientes variable
+        cout << "\nDesea agregar otro cliente? (1 = si, 0 = no)" << endl;
+        cin >> opcion;
+        
+        if (opcion == 1){
+            cont = true;
+            cant_clientes++;
+            clientes = (Cliente*)realloc(clientes, sizeof(Cliente)*cant_clientes);
+        }
+        else{
+            cont = false;
+        }        
+    }
+    
+    for (i=0; i<NTHREADS; i++) {
+        
+        rc = pthread_create(&tid[i], &attr, tiempo_entrega, (void*)(&clientes[0]));
+        
+        // La variable rc recibe errores en formato entero
+        if (rc) {              
+            printf("ERROR; return code from pthread_create() is %d\n", rc); //si hay error, imprimir el error
+            exit(-1); //salir del programa
+        }
+    }
+    for (i=0; i<NTHREADS; i++) {
+        rc = pthread_join(tid[i], NULL);
+        if (rc) {
+        printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
+        exit(-1); //salir del programa
+        }
+    }
+
+    
+    for (i=0; i<NTHREADS; i++) {
+        
+        rc = pthread_create(&tid[i], &attr, totalVendido, (void*)(&clientes[0]));
+        
+        // La variable rc recibe errores en formato entero
+        if (rc) {              
+            printf("ERROR; return code from pthread_create() is %d\n", rc); //si hay error, imprimir el error
+            exit(-1); //salir del programa
+        }
+    }
+    for (i=0; i<NTHREADS; i++) {
+        rc = pthread_join(tid[i], NULL); 
+        if (rc) {
+        printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
+        exit(-1); //salir del programa
+        }
+    }
+
+    pthread_attr_destroy(&attr);
+    
+}
 
 int determinar_distancia(int zona){
     double km = 0.0;
@@ -140,121 +310,4 @@ int determinar_distancia(int zona){
         break;
     }
     return km;
-}
-
-void imprimir_catalogo(){
-    cout << "------------------------------------CATALOGO DE PRODUCTOS------------------------------------" << endl;
-    for (int i = 0; i < 24; i++)
-    {
-        Producto prod = catalogo[i];
-        cout<< (i+1)<<". " <<prod.nombre << ": Q." << prod.precio <<endl;
-    }
-    cout << "---------------------------------------------------------------------------------------------" << endl;
-}
-
-//funcion para calcular el total de productos vendidos y el total de dinero
-void* totalVendido(void *args){ // recibe como parámetros struct Cliente
-    Cliente *cliente = (Cliente*) args;
-    float total = 0;
-    int totalProductos = 0;
-    for(int i = 0; i < cliente->cantidadProductos; i++){
-        total += cliente->productos[i].precio * cliente->productos[i].cantidad;
-        totalProductos += cliente->productos[i].cantidad;
-    }
-    cout << "Total de productos vendidos: " << totalProductos << endl;
-    cout << "Total de dinero: " << total << endl;
-}
-
-void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
-    
-    Cliente *cliente = (Cliente*) args;
-    
-    // obtener la zona_entrega del struct
-    int zona = cliente->zona_entrega;
-    int distancia = determinar_distancia(zona);
-    int eventorand = 5 - rand() % 10 + 1; // velocidad aleatoria entre 1 y 10
-    int velocidad = 60;
-    int tiempo = (distancia / velocidad) + eventorand;
-    cliente->tiempo = tiempo;
-    
-}
-
-// Subrutina principal para simular las actividades de cada moto de manera individual
-void* repartir(void *args){
-    
-}
-
-
-int main(){
-
-int rc;
-  long i;
-  // Declarar una variable tipo pthread_t
-  pthread_t tid[NTHREADS];
-
-  pthread_attr_t attr;  //atributos de los hilos
-
-  pthread_attr_init(&attr); //inicializar los atributos de los hilos
-
-  pthread_attr_setdetachstate(&attr, PTHREAD_CREATE_JOINABLE); //crear los hilos como joinable (se pueden unir)
-
-    // Variables
-    int cant_clientes = 1;
-    bool cont = true;
-    int opcion;
-
-    // HIlos
-
-    
-    //Se declara un array de tamaño dinámico para la cantidad de clientes.
-    Cliente* clientes = (Cliente*)malloc(sizeof(Cliente)*cant_clientes);
-    cout << "\nBienvenido a PanaPedidos\n" << endl;    
-    
-    while (cont)
-    {
-        Cliente cliente;
-        cout<<"Ingrese su nombre: "<<endl;
-        cin>>cliente.nombre;
-        cout << "Ingrese el número de la zona de entrega: " << endl;
-        cin >> cliente.zona_entrega;
-        cout<<"Ingrese su direccion de entrega: "<<endl;
-        cin>>cliente.direccion_entrega;
-        
-
-        // Pedir la orden
-        imprimir_catalogo();
-        
-        cout<<"\nElija un máximo de 10 productos, ingresando su identificador.\n  Para finalizar ingrese 0. "<<endl;
-        for (int i = 0; i < 10; i++)
-        {
-            int id = 0;
-            cin >> id;
-
-            if(id == 0){
-                break;  // Salir del IF
-            }
-
-            Producto prod = catalogo[id + 1];
-            cliente.productos[i] = prod;
-        }
-        
-        
-
-
-        // Generar cantidad de clientes variable
-        cout << "Desea agregar otro cliente? (1 = si, 0 = no)" << endl;
-        cin >> opcion;
-        
-        if (opcion == 1){
-            cont = true;
-            clientes = (Cliente*)realloc(clientes, sizeof(Cliente)*cant_clientes);
-            cant_clientes++;
-        }
-        else{
-            cont = false;
-        }
-        
-
-    }
-    
 }
