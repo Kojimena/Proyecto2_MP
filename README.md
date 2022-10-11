@@ -12,8 +12,15 @@ Integrantes:
 
 ## Índice
 1. [Archivo CPP](https://github.com/Kojimena/Proyecto2_MP/blob/main/main.cpp)
-2. [Diagrama de flujo]()
-3. [Video](https://drive.google.com/file/d/1CZOnq6euxaovaHErmzEW6FeuFyzdBS0O/view?usp=sharing)
+2. [Video](https://drive.google.com/file/d/1CZOnq6euxaovaHErmzEW6FeuFyzdBS0O/view?usp=sharing)
+3. [Diagram de flujo](https://github.com/Kojimena/Proyecto2_MP/blob/main/Proyecto_2_Microprocesadores.png)
+
+## Diagrama de Flujo
+<div align="center">
+	<img src="https://github.com/Kojimena/Proyecto2_MP/blob/main/Proyecto_2_Microprocesadores.png" width="800">
+</div>
+
+
 
 
 
