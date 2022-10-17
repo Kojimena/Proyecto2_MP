@@ -32,7 +32,7 @@ struct Cliente{ //estructura de los clientes
     string direccion_entrega;
     double zona_entrega;
     int cantidadProductos;
-    Producto productos[10];
+    Producto *productos;
     double tiempo;
 };
 
@@ -226,6 +226,7 @@ int main(){
         imprimir_catalogo();
         
         int cant_prod = 0;
+        cliente.productos = (Producto*)malloc(sizeof (Producto) * cant_prod);
         cout<<"\nElija un máximo de 10 productos, ingresando su identificador.\n  Para finalizar ingrese 0. "<<endl;
         for (int i = 0; i < 10; i++)
         {
@@ -236,6 +237,7 @@ int main(){
                 break;  // Salir del IF
             }
             cant_prod++;
+            cliente.productos = (Producto*)realloc(cliente.productos, sizeof (Producto) * cant_prod);
 
             Producto prod = catalogo[id - 1]; // Se obtiene el producto del catalogo
             cliente.productos[i] = prod; // Se agrega el producto al cliente
