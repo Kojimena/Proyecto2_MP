@@ -173,13 +173,13 @@ void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
     // obtener la zona_entrega del struct
     int zona = cliente->zona_entrega;
     double distancia = determinar_distancia(zona);
-    if (distancia == -1.00 || distancia == 0.00){
+    if (distancia == -1.00 || distancia == 0.00){ // si la zona no existe
         cout << "Zona sin cobertura" << endl;
         return NULL;
     }else{   
         double eventorand = rand() % 10 + 1;
         double velocidad = 50.00;
-        double tiempo = (distancia / (velocidad+eventorand))*60.00;
+        double tiempo = (distancia / (velocidad+eventorand))*60.00; //la velocidad sera suma de la velocidad base y un numero aleatorio entre 1 y 10.
         cliente->tiempo = tiempo; // se guarda el tiempo en el struct
         cout << "Tiempo de entrega: " << tiempo << " minutos" << endl;
     }
@@ -227,7 +227,7 @@ int main(){
         
         int cant_prod = 0;
         cliente.productos = (Producto*)malloc(sizeof (Producto) * 1);
-        cout<<"\nElija un máximo de 10 productos, ingresando su identificador.\n  Para finalizar ingrese 0. "<<endl;
+        cout<<"\nElija los productos que desea, ingresando su identificador.\n  Para finalizar ingrese 0. "<<endl;
         for (int i = 0; i < 10; i++)
         {
             int id = 0;
