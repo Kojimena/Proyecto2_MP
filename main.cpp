@@ -226,7 +226,7 @@ int main(){
         imprimir_catalogo();
         
         int cant_prod = 0;
-        cliente.productos = (Producto*)malloc(sizeof (Producto) * cant_prod);
+        cliente.productos = (Producto*)malloc(sizeof (Producto) * 1);
         cout<<"\nElija un máximo de 10 productos, ingresando su identificador.\n  Para finalizar ingrese 0. "<<endl;
         for (int i = 0; i < 10; i++)
         {
