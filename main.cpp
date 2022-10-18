@@ -16,7 +16,9 @@ Descripción: Programa simulador de entregas de repartidores.
  ***********************************************************************/
 
 #include <iostream>
-#include <cstdlib> // para el random 
+#include <cstdlib> // para el random
+#include <vector>
+
 #define NTHREADS 4 //  hilos a crear
 using namespace std;
 int cantidadClientes;
@@ -32,7 +34,7 @@ struct Cliente{ //estructura de los clientes
     string direccion_entrega;
     double zona_entrega;
     int cantidadProductos;
-    Producto *productos;
+    vector<Producto> productos;
     double tiempo;
 };
 
@@ -141,9 +143,6 @@ int determinar_distancia(int zona){
     return km;
 }
 
-int determinar_distancia(int zona);
-
-
 void imprimir_catalogo(){
     cout << "------------------------------------CATÁLOGO DE PRODUCTOS------------------------------------" << endl;
     for (int i = 0; i < 24; i++)
@@ -192,9 +191,8 @@ void* repartir(void *args){
 
 
 int main(){
-    // HIlos
+    // Hilos
     int rc;
-    long i;
     pthread_t tid[NTHREADS];
     pthread_attr_t attr;  //atributos de los hilos
     pthread_attr_init(&attr); //inicializar los atributos de los hilos
@@ -208,7 +206,7 @@ int main(){
     // HIlos
 
     //Se declara un array de tamaño dinámico para la cantidad de clientes.
-    Cliente* clientes = (Cliente*)malloc(sizeof(Cliente)*cant_clientes);
+    Cliente* clientes = (Cliente*)malloc(sizeof(Cliente) * cant_clientes);
     cout << "\nBienvenido a PanaPedidos\n" << endl;    
     
     while (cont)
@@ -226,34 +224,30 @@ int main(){
         imprimir_catalogo();
         
         int cant_prod = 0;
-        cliente.productos = (Producto*)malloc(sizeof (Producto) * 1);
         cout<<"\nElija los productos que desea, ingresando su identificador.\n  Para finalizar ingrese 0. "<<endl;
-        for (int i = 0; i < 10; i++)
-        {
-            int id = 0;
-            cin >> id;
+        int id = -1;
+        while(id != 0){
+            cin >> id;  // Ingreso de un producto
 
-            if(id == 0){
-                break;  // Salir del IF
+            if(id == 0){  // Terminar la orden
+                break;
             }
             cant_prod++;
-            cliente.productos = (Producto*)realloc(cliente.productos, sizeof (Producto) * cant_prod);
-
-            Producto prod = catalogo[id - 1]; // Se obtiene el producto del catalogo
-            cliente.productos[i] = prod; // Se agrega el producto al cliente
+            Producto prod = catalogo[id - 1]; // Se obtiene el producto del catálogo
+            cliente.productos.push_back(prod); // Se agrega el producto al cliente
         }
         cliente.cantidadProductos = cant_prod;
+        clientes[cant_clientes - 1] = cliente;
+
+        // Repaso de la orden
         cout << "Cantidad de productos: " << cliente.cantidadProductos << endl;
-        
         cout << "Su orden contiene los siguientes productos: " << endl;
         for (int i = 0; i < cant_prod; i++)
         {
             Producto prod = cliente.productos[i];
             cout << prod.nombre << ": Q." << prod.precio << endl;
         }
-        
-        
-        clientes[cant_clientes - 1] = cliente;
+
 
         // Generar cantidad de clientes variable
         cout << "\nDesea agregar otro cliente? (1 = si, 0 = no)" << endl;
@@ -268,9 +262,9 @@ int main(){
             cont = false;
         }        
     }
-    
-    for (i=0; i<NTHREADS; i++) {
-        
+
+    // Calcular los tiempos de entrega para cada cliente
+    for (int i=0; i<NTHREADS; i++) {
         rc = pthread_create(&tid[i], &attr, tiempo_entrega, (void*)(&clientes[0]));
         
         // La variable rc recibe errores en formato entero
@@ -279,7 +273,7 @@ int main(){
             exit(-1); //salir del programa
         }
     }
-    for (i=0; i<NTHREADS; i++) {
+    for (int i=0; i<NTHREADS; i++) {
         rc = pthread_join(tid[i], NULL);
         if (rc) {
         printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
@@ -287,9 +281,8 @@ int main(){
         }
     }
 
-    
-    for (i=0; i<NTHREADS; i++) {
-        
+    // Calcular el total vendido
+    for (int i=0; i<NTHREADS; i++) {
         rc = pthread_create(&tid[i], &attr, totalVendido, (void*)(&clientes[0]));
         
         // La variable rc recibe errores en formato entero
@@ -298,7 +291,7 @@ int main(){
             exit(-1); //salir del programa
         }
     }
-    for (i=0; i<NTHREADS; i++) {
+    for (int i=0; i<NTHREADS; i++) {
         rc = pthread_join(tid[i], NULL); 
         if (rc) {
         printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
