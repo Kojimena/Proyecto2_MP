@@ -1,3 +1,5 @@
+#pragma clang diagnostic push
+#pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
 /*************************************************************************
 UNIVERSIDAD DEL VALLE DE GUATEMALA
 FACULTAD DE INGENIERÍA
@@ -21,11 +23,9 @@ Descripción: Programa simulador de entregas de repartidores.
 
 #define NTHREADS 4 //  hilos a crear
 using namespace std;
-int cantidadClientes;
 
 struct Producto{ //estructura de los productos
     string nombre;
-    int cantidad;
     double precio;
 };
 
@@ -40,104 +40,104 @@ struct Cliente{ //estructura de los clientes
 
 Producto catalogo[] = {
 
-    {"Papel higienico pack 6 rollos", 0,  30.00},
-    {"Pechugas de pollo 1lb", 0, 25.00},
-    {"Camarones 1lb", 0, 15.00},
-    {"Crema humectante 400ml", 0, 80.00},
-    {"Tortrix limón pack 6 bolsas", 0, 30.00},
-    {"Coca-cola pack 6 latas", 0, 40.00},
-    {"Desodorante 150mL", 0, 30.00},
-    {"Shampoo 1l", 0, 60.00},
-    {"XL Sour Blast 750mL", 0, 70.00},
-    {"Cerveza Gallo pack 15 latas", 0, 110.00},
-    {"Cigarros Malboro Cajetilla", 0, 28.00},
-    {"Aceite Ideal 800mL", 0, 60.00},
-    {"Combo Hambuerguesa", 0, 50.00},
-    {"Bandeja Sushi 2 rollos", 0, 130.00},
-    {"Combo 2 hotdogs", 0, 30.00},
-    {"Papas Fritas con queso", 0, 15.00},
-    {"Pollo rostizado entero", 0, 120.00},
-    {"Combo 10 alitas", 0, 80.00},
-    {"Combo sandwitch pollo", 0, 40.00},
-    {"Pizza personal", 0, 40.00},
-    {"Donas 3 pack", 0, 15.00},
-    {"Monster lata", 0, 15.00},
-    {"Red Bull lata", 0, 15.00},
-    {"Vodka Smirnoff 750 ml", 0, 130.00}
+    {"Papel higiénico pack 6 rollos", 30.00},
+    {"Pechugas de pollo 1lb", 25.00},
+    {"Camarones 1lb", 15.00},
+    {"Crema humectante 400ml", 80.00},
+    {"Tortrix limón pack 6 bolsas", 30.00},
+    {"Coca-cola pack 6 latas", 40.00},
+    {"Desodorante 150mL", 30.00},
+    {"Shampoo 1l", 60.00},
+    {"XL Sour Blast 750mL", 70.00},
+    {"Cerveza Gallo pack 15 latas", 110.00},
+    {"Cigarros Malboro Cajetilla", 28.00},
+    {"Aceite Ideal 800mL", 60.00},
+    {"Combo Hamburguesa", 50.00},
+    {"Bandeja Sushi 2 rollos", 130.00},
+    {"Combo 2 hot-dogs", 30.00},
+    {"Papas Fritas con queso", 15.00},
+    {"Pollo rostizado entero", 120.00},
+    {"Combo 10 alitas", 80.00},
+    {"Combo sandwich pollo", 40.00},
+    {"Pizza personal", 40.00},
+    {"Donas 3 pack", 15.00},
+    {"Monster lata", 15.00},
+    {"Red Bull lata", 15.00},
+    {"Vodka Smirnoff 750 ml", 130.00}
 };
 
-int determinar_distancia(int zona){
+double determinar_distancia(int zona){
     double km = 0.0;
     switch (zona)
     {
     case 1:    
-    km=15.0;    
+        km=15.0;
         break;
     case 2:
-    km=8.9;      
+        km=8.9;
         break;
     case 3:   
-    km=6.7;      
+        km=6.7;
         break;
     case 4:  
-    km=5.3;       
+        km=5.3;
         break;
     case 5:   
-    km=5.0;      
+        km=5.0;
         break;
     case 6:   
-    km=12.1;      
+        km=12.1;
         break;
     case 7:
-    km=13.4;         
+        km=13.4;
         break;
     case 8:
-    km=5.6;         
+        km=5.6;
         break;
     case 9:
-    km=4.5;         
+        km=4.5;
         break;
     case 10:
-    km=7.5;         
+        km=7.5;
         break;
     case 11:  
-    km=9.7;       
+        km=9.7;
         break;
     case 12:   
-    km=12.2;      
+        km=12.2;
         break;
     case 13:  
-    km=8.5;       
+        km=8.5;
         break;
     case 14:    
-    km=5.9;     
+        km=5.9;
         break;
     case 15:    
-    km=1;     
+        km=1;
         break;
     case 16:  
-    km=15.0;       
+        km=15.0;
         break;
     case 17: 
-    km=5.7;        
+        km=5.7;
         break;
     case 18:  
-    km=10.7;       
+        km=10.7;
         break;
     case 19:  
-    km=18.7;       
+        km=18.7;
         break;
     case 21:  
-    km=17.5;       
+        km=17.5;
         break;
     case 24:  
-    km=12.1;       
+        km=12.1;
         break;
     case 25:  
-    km=20.0;;       
+        km=20.0;
         break;    
     default:
-    km = -1;
+        km = -1;
         break;
     }
     return km;
@@ -153,7 +153,7 @@ void imprimir_catalogo(){
     cout << "---------------------------------------------------------------------------------------------" << endl;
 }
 
-//funcion para calcular el total de productos vendidos y el total de dinero
+//función para calcular el total de productos vendidos y el total de dinero
 void* totalVendido(void *args){ // recibe como parámetros struct Cliente
     Cliente *cliente = (Cliente*) args;
     float total = 0;
@@ -165,20 +165,18 @@ void* totalVendido(void *args){ // recibe como parámetros struct Cliente
     cout << "Total de ganancias: " << total << endl;
 }
 
-void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente 
-    
+void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
     Cliente *cliente = (Cliente*) args;
-    
     // obtener la zona_entrega del struct
     int zona = cliente->zona_entrega;
     double distancia = determinar_distancia(zona);
-    if (distancia == -1.00 || distancia == 0.00){ // si la zona no existe
+    if (distancia <= 0){ // si la zona no existe
         cout << "Zona sin cobertura" << endl;
-        return NULL;
+        return nullptr;
     }else{   
-        double eventorand = rand() % 10 + 1;
+        double evento_rand = rand() % 10 + 1;
         double velocidad = 50.00;
-        double tiempo = (distancia / (velocidad+eventorand))*60.00; //la velocidad sera suma de la velocidad base y un numero aleatorio entre 1 y 10.
+        double tiempo = (distancia / (velocidad + evento_rand)) * 60.00; //la velocidad será suma de la velocidad base y un número aleatorio entre 1 y 10.
         cliente->tiempo = tiempo; // se guarda el tiempo en el struct
         cout << "Tiempo de entrega: " << tiempo << " minutos" << endl;
     }
@@ -203,7 +201,7 @@ int main(){
     bool cont = true;
     int opcion;
 
-    // HIlos
+    // Hilos
 
     //Se declara un array de tamaño dinámico para la cantidad de clientes.
     Cliente* clientes = (Cliente*)malloc(sizeof(Cliente) * cant_clientes);
@@ -274,7 +272,7 @@ int main(){
         }
     }
     for (int i=0; i<NTHREADS; i++) {
-        rc = pthread_join(tid[i], NULL);
+        rc = pthread_join(tid[i], nullptr);
         if (rc) {
         printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
         exit(-1); //salir del programa
@@ -292,7 +290,7 @@ int main(){
         }
     }
     for (int i=0; i<NTHREADS; i++) {
-        rc = pthread_join(tid[i], NULL); 
+        rc = pthread_join(tid[i], nullptr);
         if (rc) {
         printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
         exit(-1); //salir del programa
@@ -304,3 +302,5 @@ int main(){
 }
 
 
+
+#pragma clang diagnostic pop
