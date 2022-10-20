@@ -1,5 +1,3 @@
-#pragma clang diagnostic push
-#pragma ide diagnostic ignored "cppcoreguidelines-narrowing-conversions"
 /*************************************************************************
 UNIVERSIDAD DEL VALLE DE GUATEMALA
 FACULTAD DE INGENIERÍA
@@ -18,11 +16,12 @@ Descripción: Programa simulador de entregas de repartidores.
 ***********************************************************************/
 
 #include <iostream>
-#include <cstdlib> // para el random
+#include <cstdlib> 
 #include <vector>
 #include <unistd.h>
 
-#define NTHREADS 4 //  hilos a crear
+// Variables globales
+#define NTHREADS 4 
 pthread_mutex_t mutex;
 
 using namespace std;
@@ -42,6 +41,7 @@ struct Cliente{ //estructura de los clientes
     double subtotal;
 };
 
+//Catalogo de productos
 Producto catalogo[] = {
     {"Papel higiénico pack 6 rollos", 30.00},
     {"Pechugas de pollo 1lb", 25.00},
@@ -69,7 +69,7 @@ Producto catalogo[] = {
     {"Vodka Smirnoff 750 ml", 130.00}
 };
 
-double determinar_distancia(int zona){
+double determinar_distancia(int zona){ //funcion para determinar la distancia de entrega
     double km = 0.0;
     switch (zona)
     {
@@ -146,7 +146,7 @@ double determinar_distancia(int zona){
     return km;
 }
 
-void imprimir_catalogo(){
+void imprimir_catalogo(){ //funcion para imprimir el catalogo de productos
     cout << "\n------------------------------------CATÁLOGO DE PRODUCTOS------------------------------------" << endl;
     for (int i = 0; i < 24; i++)
     {
@@ -168,6 +168,7 @@ void* SubtotalCliente(void *args){ // recibe como parámetros struct Cliente
     pthread_mutex_unlock(&mutex); 
 }
 
+// Función para determinar el tiempo de entrega
 void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
     Cliente *cliente = (Cliente*) args;
     // obtener la zona_entrega del struct
@@ -190,13 +191,11 @@ void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
 void* repartir(void *args){
     Cliente *clientesRepartir = (Cliente*) args;
     sleep(clientesRepartir->tiempo);  // Se simulará el tiempo con la relación de 1 minuto == 1 segundo en sleep
-    cout << "Se ha realizado la entrega de: " << clientesRepartir->nombre << endl;
-    
+    cout << "Se ha realizado la entrega de: " << clientesRepartir->nombre << endl;    
 }
 
 
 int main(){
-    // Hilos
     int rc;
     pthread_t tid[NTHREADS];
     pthread_attr_t attr;  //atributos de los hilos
@@ -207,11 +206,8 @@ int main(){
     int cant_clientes = 1;
     bool cont = true;
     int opcion;
-
-    // Hilos
-
-    //Se declara un array de tamaño dinámico para la cantidad de clientes.
-    Cliente* clientes = (Cliente*)malloc(sizeof(Cliente) * cant_clientes);
+    
+    Cliente* clientes = (Cliente*)malloc(sizeof(Cliente) * cant_clientes);  //Se declara un array de tamaño dinámico para la cantidad de clientes.
     cout << "\nBienvenido a PanaPedidos\n" << endl; 
     cout << "\nPor favor, ingresa los siguientes datos para poder realizar tu pedido\n" << endl;    
     
@@ -222,6 +218,7 @@ int main(){
         cin>>cliente.nombre;
         cout << "Indique el número de la zona de entrega: " << endl;
         cin >> cliente.zona_entrega;
+        // Se verifica que la zona de entrega sea válida
         if (cliente.zona_entrega >= 1 && cliente.zona_entrega <= 25){
             if(cliente.zona_entrega == 20 || cliente.zona_entrega == 22 || cliente.zona_entrega == 23){
                 cout << "Zona sin cobertura" << endl;
@@ -230,14 +227,11 @@ int main(){
                 cout<<"Ingrese su direccion de entrega: "<<endl;
                 cin>>cliente.direccion_entrega; 
             }
-                        
         }else{
             cout << "Zona sin cobertura" << endl;
             continue;
         }
         
-        
-
         // Se imprime el catálogo de productos
         imprimir_catalogo();
         
@@ -247,7 +241,6 @@ int main(){
         int id = -1;
         while(id != 0){
             cin >> id;  // Ingreso de un producto
-
             if(id == 0){  // Terminar la orden
                 break;
             } else if (id < 0 || id > 24) {
@@ -296,12 +289,9 @@ int main(){
     }
 
     //calcular el total de clientes por operador.
-    int n1;
-    int n2;
-    int n3;
-    int n4;
+    int n1, n2, n3, n4;
 
-    int cantidad_motos;
+    int cantidad_motos; 
 
     if (cant_clientes > 4){
         n1 = cant_clientes / 4;
@@ -313,7 +303,7 @@ int main(){
         
     }
 
-    if (cant_clientes == 4){ // mas de algo va a servir esto.
+    if (cant_clientes == 4){
         n1 = 1;
         n2 = 1;
         n3 = 1;
@@ -368,25 +358,24 @@ int main(){
         clienteMotorista4[i] = clientes[i+n1+n2+n3];
     }
     
-    // Repartira todos los clientes
+    // Repartir a todos los clientes
+    // Moto 1
     for(int i=0; i<n1; i++){
         cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[0], &attr, repartir, (void*)(&clienteMotorista1[i]));
-
     }
-    
+    // Moto 2    
     for(int i=0; i<n2; i++){
         cout<<"El tiempo a entregar para " << clienteMotorista2[i].nombre << " es de " << clienteMotorista2[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[1], &attr, repartir, (void*)(&clienteMotorista2[i]));
-
     }
-
+    // Moto 3
     for(int i=0; i<n3; i++){
         cout<<"El tiempo a entregar para " << clienteMotorista3[i].nombre << " es de " << clienteMotorista3[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[2], &attr, repartir, (void*)(&clienteMotorista3[i]));
 
     }
-
+    // Moto 4
     for(int i=0; i<n4; i++){
         cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[3], &attr, repartir, (void*)(&clienteMotorista4[i]));
@@ -397,9 +386,7 @@ int main(){
         rc = pthread_join(tid[i], nullptr);
     }
     
-
     
-    // Calcular el total vendido
     for (int j = 0; j < cant_clientes; j++)
     {
         rc = pthread_create(&tid[0], &attr, SubtotalCliente, (void*)(&clientes[j]));
@@ -409,8 +396,6 @@ int main(){
     for (int i=0; i<NTHREADS; i++) {
         rc = pthread_join(tid[i], nullptr);
     }
-
-
 
     // Resumen de ventas
     cout << "Facturas" << endl;
@@ -432,16 +417,14 @@ int main(){
     }
     
 
-    // Imprimir mensaje de salida
+    // Mensajes de salida
     cout<<"\nEl total de ventas del día es de: Q." << ventas << endl;
     cout<<"\nSe han termiado de repartir los pedidos"<< endl;
     cout<<"Gracias por usar el sistema de pedidos PanaPedidos"<< endl;
     cout<<"Hasta pronto!"<< endl;
+
+    // Liberar memoria
     pthread_attr_destroy(&attr);
     free(clientes);
     return 0;
 }
-
-
-
-#pragma clang diagnostic pop
