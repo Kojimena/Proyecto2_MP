@@ -15,11 +15,12 @@ Diego Morales 21146
 Javier Azurdia 21242
             
 Descripción: Programa simulador de entregas de repartidores.
- ***********************************************************************/
+***********************************************************************/
 
 #include <iostream>
 #include <cstdlib> // para el random
 #include <vector>
+#include <unistd.h>
 
 #define NTHREADS 4 //  hilos a crear
 using namespace std;
@@ -36,6 +37,7 @@ struct Cliente{ //estructura de los clientes
     int cantidadProductos;
     vector<Producto> productos;
     double tiempo;
+    double subtotal;
 };
 
 Producto catalogo[] = {
@@ -152,16 +154,14 @@ void imprimir_catalogo(){
     cout << "---------------------------------------------------------------------------------------------" << endl;
 }
 
-//función para calcular el total de productos vendidos y el total de dinero
-void* totalVendido(void *args){ // recibe como parámetros struct Cliente
+//función para calcular el subtotal del pedido de cada clliente
+void* SubtotalCliente(void *args){ // recibe como parámetros struct Cliente
     Cliente *cliente = (Cliente*) args;
-    float total = 0;
-    for(int i = 0; i < cliente->cantidadProductos; i++){
-        total += cliente->productos[i].precio * cliente->cantidadProductos;
+    double subtotal = 0;
+    for(int i = 0; i < cliente->cantidadProductos; i++){ 
+        subtotal += cliente->productos[i].precio * cliente->cantidadProductos; //calcula el subtotal
     }
-    cout << "---------------------------------------------" << endl;
-    cout << "Total de productos vendidos: " << cliente->cantidadProductos << endl;
-    cout << "Total de ganancias: " << total << endl;
+    cliente->subtotal = subtotal; // se guarda el subtotal en la estructura del cliente 
 }
 
 void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
@@ -177,12 +177,23 @@ void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
         double velocidad = 50.00;
         double tiempo = (distancia / (velocidad + evento_rand)) * 60.00; //la velocidad será suma de la velocidad base y un número aleatorio entre 1 y 10.
         cliente->tiempo = tiempo; // se guarda el tiempo en el struct
-        cout << "Tiempo de entrega: " << tiempo << " minutos" << endl;
     }
 }
 
 // Subrutina principal para simular las actividades de cada moto de manera individual
 void* repartir(void *args){
+    /*
+    ListaClientes *clientesRepartir = (ListaClientes*) args;
+    cout << "N: "<< clientesRepartir->n << endl;
+    for (int i = 0; i < clientesRepartir->n; i++)
+    {
+        Cliente clienteActual = clientesRepartir->clientes[i];
+        //sleep(clienteActual.tiempo);  // Se simulará el tiempo con la relación de 1 minuto == 1 segundo en sleep
+        cout << "Se ha realizado la entrega de: " << clienteActual.nombre << endl;
+    }*/
+    Cliente *clientesRepartir = (Cliente*) args;
+    sleep(clientesRepartir->tiempo);  // Se simulará el tiempo con la relación de 1 minuto == 1 segundo en sleep
+    cout << "Se ha realizado la entrega de: " << clientesRepartir->nombre << endl;
     
 }
 
@@ -204,22 +215,24 @@ int main(){
 
     //Se declara un array de tamaño dinámico para la cantidad de clientes.
     Cliente* clientes = (Cliente*)malloc(sizeof(Cliente) * cant_clientes);
-    cout << "\nBienvenido a PanaPedidos\n" << endl;    
+    cout << "\nBienvenido a PanaPedidos\n" << endl; 
+    cout << "\nPor favor, ingresa los siguientes datos para poder realizar tu pedido\n" << endl;    
     
     while (cont)
     {
         Cliente cliente;
         cout<<"Ingrese su nombre: "<<endl;
         cin>>cliente.nombre;
-        cout << "Ingrese el número de la zona de entrega: " << endl;
+        cout << "Indique el número de la zona de entrega: " << endl;
         cin >> cliente.zona_entrega;
         cout<<"Ingrese su direccion de entrega: "<<endl;
         cin>>cliente.direccion_entrega;
         
 
-        // Pedir la orden
+        // Se imprime el catálogo de productos
         imprimir_catalogo();
         
+        // Se pide al usuario que ingrese la cantidad de productos que desea
         int cant_prod = 0;
         cout<<"\nElija los productos que desea, ingresando su identificador.\n  Para finalizar ingrese 0. "<<endl;
         int id = -1;
@@ -262,10 +275,12 @@ int main(){
 
     // Calcular los tiempos de entrega para cada cliente
     for (int i=0; i<NTHREADS; i++) {
-        rc = pthread_create(&tid[i], &attr, tiempo_entrega, (void*)(&clientes[0]));
-        
+        for (int j = 0; j < cant_clientes; ++j) {
+            rc = pthread_create(&tid[i], &attr, tiempo_entrega, (void*)(&clientes[j]));
+        }
+
         // La variable rc recibe errores en formato entero
-        if (rc) {              
+        if (rc) {
             printf("ERROR; return code from pthread_create() is %d\n", rc); //si hay error, imprimir el error
             exit(-1); //salir del programa
         }
@@ -284,11 +299,16 @@ int main(){
     int n3;
     int n4;
 
+    int cantidad_motos;
+
     if (cant_clientes > 4){
         n1 = cant_clientes / 4;
         n2 = cant_clientes / 4;
         n3 = cant_clientes / 4;
         n4 = (cant_clientes / 4) + (cant_clientes % 4);
+        
+        cantidad_motos = 4;
+        
     }
 
     if (cant_clientes == 4){ // mas de algo va a servir esto.
@@ -296,6 +316,8 @@ int main(){
         n2 = 1;
         n3 = 1;
         n4 = 1;
+        cantidad_motos = 4;
+
     }
 
     if (cant_clientes < 4){
@@ -304,42 +326,86 @@ int main(){
             n2 = 0;
             n3 = 0;
             n4 = 0;
+            cantidad_motos = 1;
+            
         } else if (cant_clientes == 2){
             n1 = 1;
             n2 = 1;
             n3 = 0;
             n4 = 0;
+            cantidad_motos = 2;
         } else if (cant_clientes == 3){
             n1 = 1;
             n2 = 1;
             n3 = 1;
             n4 = 0;
+            cantidad_motos = 3;
         }
     }
-
-
-    /**
-     * si cantidad clientes < 4
-     *  lo de arriba.
-     *
-     *  Si hay menos de 4 clientes, no sería más fácil usar un case? Digamos
-     *  que hay solo2, entonces solo usamos dos motoristas.
-     *
-     *  En realidad, nos sale hasta mas "caro" usar mas de un solo motorista para cada cliente.
-     *
-     */
-
 
     Cliente clienteMotorista1[n1];
     Cliente clienteMotorista2[n2];
     Cliente clienteMotorista3[n3];
     Cliente clienteMotorista4[n4];
-
     
 
+    // asignar los clientes a los arrays.
+    for(int i = 0; i < n1; i++){
+        clienteMotorista1[i] = clientes[i];
+    }
+
+    for(int i = 0; i < n2; i++){
+        clienteMotorista2[i] = clientes[i+n1];
+    }
+
+    for(int i = 0; i < n3; i++){
+        clienteMotorista3[i] = clientes[i+n1+n2];
+    }
+
+    for(int i = 0; i < n4; i++){
+        clienteMotorista4[i] = clientes[i+n1+n2+n3];
+    }
+    
+    // Repartir
+    
+    for(int i=0; i<n1; i++){
+        cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<endl;
+        rc = pthread_create(&tid[0], &attr, repartir, (void*)(&clienteMotorista1[i]));
+
+    }
+    
+    for(int i=0; i<n2; i++){
+        cout<<"El tiempo a entregar para " << clienteMotorista2[i].nombre << " es de " << clienteMotorista2[i].tiempo<<endl;
+        rc = pthread_create(&tid[1], &attr, repartir, (void*)(&clienteMotorista2[i]));
+
+    }
+
+    for(int i=0; i<n3; i++){
+        cout<<"El tiempo a entregar para " << clienteMotorista3[i].nombre << " es de " << clienteMotorista3[i].tiempo<<endl;
+        rc = pthread_create(&tid[2], &attr, repartir, (void*)(&clienteMotorista3[i]));
+
+    }
+
+    for(int i=0; i<n4; i++){
+        cout<<"El tiempo a entregar para " << clienteMotorista4[i].nombre << " es de " << clienteMotorista4[i].tiempo<<endl;
+        rc = pthread_create(&tid[3], &attr, repartir, (void*)(&clienteMotorista4[i]));
+
+    }
+    
+    for (int i=0; i<NTHREADS; i++) {
+        rc = pthread_join(tid[i], nullptr);
+        /*
+        if (rc) {
+        printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
+        exit(-1); //salir del programa
+        }*/
+    }
+    
+
+    
     // Calcular el total vendido
     for (int i=0; i<NTHREADS; i++) {
-        rc = pthread_create(&tid[i], &attr, totalVendido, (void*)(&clientes[0]));
+        rc = pthread_create(&tid[i], &attr, SubtotalCliente, (void*)(&clientes[0]));
         
         // La variable rc recibe errores en formato entero
         if (rc) {              
@@ -356,7 +422,13 @@ int main(){
     }
 
     pthread_attr_destroy(&attr);
-    
+    free(clientes);
+
+    // Imprimir mensaje de salida
+    printf("\nSe han termiado de repartir los pedidos \n");
+    printf("Gracias por usar el sistema de pedidos PanaPedidos \n");
+    printf("Hasta pronto! \n");
+    return 0;
 }
 
 
