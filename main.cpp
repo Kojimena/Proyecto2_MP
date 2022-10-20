@@ -177,9 +177,9 @@ void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
         cout << "Zona sin cobertura" << endl;
         return nullptr;
     }else{   
-        double evento_rand = rand() % 10 + 1;
+        double evento_rand = (rand() % 10) + 1;
         double velocidad = 50.00;
-        double tiempo = (distancia / (velocidad + evento_rand)) * 60.00; //la velocidad será suma de la velocidad base y un número aleatorio entre 1 y 10.
+        double tiempo = (distancia / (velocidad - evento_rand)) * 60.00; //la velocidad será suma de la velocidad base y un número aleatorio entre 1 y 10.
         pthread_mutex_lock(&mutex);
         cliente->tiempo = tiempo; // se guarda el tiempo en el struct
         pthread_mutex_unlock(&mutex); 
