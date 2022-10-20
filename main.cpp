@@ -23,6 +23,8 @@ Descripción: Programa simulador de entregas de repartidores.
 #include <unistd.h>
 
 #define NTHREADS 4 //  hilos a crear
+pthread_mutex_t mutex;
+
 using namespace std;
 
 struct Producto{ //estructura de los productos
@@ -158,10 +160,12 @@ void imprimir_catalogo(){
 void* SubtotalCliente(void *args){ // recibe como parámetros struct Cliente
     Cliente *cliente = (Cliente*) args;
     double subtotal = 0;
+    pthread_mutex_lock(&mutex);
     for(int i = 0; i < cliente->cantidadProductos; i++){ 
-        subtotal += cliente->productos[i].precio * cliente->cantidadProductos; //calcula el subtotal
+        subtotal += cliente->productos[i].precio; //calcula el subtotal
     }
     cliente->subtotal = subtotal; // se guarda el subtotal en la estructura del cliente 
+    pthread_mutex_unlock(&mutex); 
 }
 
 void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
@@ -176,21 +180,14 @@ void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
         double evento_rand = rand() % 10 + 1;
         double velocidad = 50.00;
         double tiempo = (distancia / (velocidad + evento_rand)) * 60.00; //la velocidad será suma de la velocidad base y un número aleatorio entre 1 y 10.
+        pthread_mutex_lock(&mutex);
         cliente->tiempo = tiempo; // se guarda el tiempo en el struct
+        pthread_mutex_unlock(&mutex); 
     }
 }
 
 // Subrutina principal para simular las actividades de cada moto de manera individual
 void* repartir(void *args){
-    /*
-    ListaClientes *clientesRepartir = (ListaClientes*) args;
-    cout << "N: "<< clientesRepartir->n << endl;
-    for (int i = 0; i < clientesRepartir->n; i++)
-    {
-        Cliente clienteActual = clientesRepartir->clientes[i];
-        //sleep(clienteActual.tiempo);  // Se simulará el tiempo con la relación de 1 minuto == 1 segundo en sleep
-        cout << "Se ha realizado la entrega de: " << clienteActual.nombre << endl;
-    }*/
     Cliente *clientesRepartir = (Cliente*) args;
     sleep(clientesRepartir->tiempo);  // Se simulará el tiempo con la relación de 1 minuto == 1 segundo en sleep
     cout << "Se ha realizado la entrega de: " << clientesRepartir->nombre << endl;
@@ -241,23 +238,16 @@ int main(){
 
             if(id == 0){  // Terminar la orden
                 break;
+            } else if (id < 0 || id > 24) {
+                cout  << "Producto no encontrado" << endl;
+                break;
             }
             cant_prod++;
             Producto prod = catalogo[id - 1]; // Se obtiene el producto del catálogo
             cliente.productos.push_back(prod); // Se agrega el producto al cliente
         }
         cliente.cantidadProductos = cant_prod;
-        clientes[cant_clientes - 1] = cliente;
-
-        // Repaso de la orden
-        cout << "Cantidad de productos: " << cliente.cantidadProductos << endl;
-        cout << "Su orden contiene los siguientes productos: " << endl;
-        for (int i = 0; i < cant_prod; i++)
-        {
-            Producto prod = cliente.productos[i];
-            cout << prod.nombre << ": Q." << prod.precio << endl;
-        }
-
+        clientes[cant_clientes - 1] = cliente;        
 
         // Generar cantidad de clientes variable
         cout << "\nDesea agregar otro cliente? (1 = si, 0 = no)" << endl;
@@ -293,7 +283,7 @@ int main(){
         }
     }
 
-    // Funcion para calcular el total de clientes por operador.
+    //calcular el total de clientes por operador.
     int n1;
     int n2;
     int n3;
@@ -387,7 +377,7 @@ int main(){
     }
 
     for(int i=0; i<n4; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista4[i].nombre << " es de " << clienteMotorista4[i].tiempo<<endl;
+        cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<endl;
         rc = pthread_create(&tid[3], &attr, repartir, (void*)(&clienteMotorista4[i]));
 
     }
@@ -404,30 +394,46 @@ int main(){
 
     
     // Calcular el total vendido
-    for (int i=0; i<NTHREADS; i++) {
-        rc = pthread_create(&tid[i], &attr, SubtotalCliente, (void*)(&clientes[0]));
-        
-        // La variable rc recibe errores en formato entero
-        if (rc) {              
-            printf("ERROR; return code from pthread_create() is %d\n", rc); //si hay error, imprimir el error
-            exit(-1); //salir del programa
-        }
-    }
+
+    for (int j = 0; j < cant_clientes; j++)
+    {
+        rc = pthread_create(&tid[0], &attr, SubtotalCliente, (void*)(&clientes[j]));
+    }    
+
+    
     for (int i=0; i<NTHREADS; i++) {
         rc = pthread_join(tid[i], nullptr);
-        if (rc) {
-        printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
-        exit(-1); //salir del programa
-        }
     }
 
-    pthread_attr_destroy(&attr);
-    free(clientes);
+
+
+    // Resumen de ventas
+    cout << "Facturas" << endl;
+    double ventas = 0;
+    for (int i = 0; i < cant_clientes; i++)
+    {
+        ventas += clientes[i].subtotal;
+        // Repaso de la orden
+        cout<<"\nOrden a nombre de: " << clientes[i].nombre << endl;
+        cout<<"Dirección de entrega: " << clientes[i].direccion_entrega << endl;
+        cout << "Cantidad de productos: " << clientes[i].cantidadProductos << endl;
+        cout << "La orden contiene los siguientes productos: " << endl;
+        for (int j = 0; j < clientes[i].cantidadProductos; j++)
+        {
+            Producto prod = clientes[i].productos[j];
+            cout << "\t" << prod.nombre << ": Q." << prod.precio << endl;
+        }
+        cout << "\nSubtotal de la orden: Q." << clientes[i].subtotal << endl;
+    }
+    
 
     // Imprimir mensaje de salida
-    printf("\nSe han termiado de repartir los pedidos \n");
-    printf("Gracias por usar el sistema de pedidos PanaPedidos \n");
-    printf("Hasta pronto! \n");
+    cout<<"\nEl total de ventas del día es de: Q." << ventas << endl;
+    cout<<"\nSe han termiado de repartir los pedidos"<< endl;
+    cout<<"Gracias por usar el sistema de pedidos PanaPedidos"<< endl;
+    cout<<"Hasta pronto!"<< endl;
+    pthread_attr_destroy(&attr);
+    free(clientes);
     return 0;
 }
 
