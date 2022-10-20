@@ -222,8 +222,20 @@ int main(){
         cin>>cliente.nombre;
         cout << "Indique el número de la zona de entrega: " << endl;
         cin >> cliente.zona_entrega;
-        cout<<"Ingrese su direccion de entrega: "<<endl;
-        cin>>cliente.direccion_entrega;
+        if (cliente.zona_entrega >= 1 && cliente.zona_entrega <= 25){
+            if(cliente.zona_entrega == 20 || cliente.zona_entrega == 22 || cliente.zona_entrega == 23){
+                cout << "Zona sin cobertura" << endl;
+                continue;
+            }else{
+                cout<<"Ingrese su direccion de entrega: "<<endl;
+                cin>>cliente.direccion_entrega; 
+            }
+                        
+        }else{
+            cout << "Zona sin cobertura" << endl;
+            continue;
+        }
+        
         
 
         // Se imprime el catálogo de productos
@@ -359,25 +371,25 @@ int main(){
     // Repartir
     
     for(int i=0; i<n1; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<endl;
+        cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[0], &attr, repartir, (void*)(&clienteMotorista1[i]));
 
     }
     
     for(int i=0; i<n2; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista2[i].nombre << " es de " << clienteMotorista2[i].tiempo<<endl;
+        cout<<"El tiempo a entregar para " << clienteMotorista2[i].nombre << " es de " << clienteMotorista2[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[1], &attr, repartir, (void*)(&clienteMotorista2[i]));
 
     }
 
     for(int i=0; i<n3; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista3[i].nombre << " es de " << clienteMotorista3[i].tiempo<<endl;
+        cout<<"El tiempo a entregar para " << clienteMotorista3[i].nombre << " es de " << clienteMotorista3[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[2], &attr, repartir, (void*)(&clienteMotorista3[i]));
 
     }
 
     for(int i=0; i<n4; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<endl;
+        cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[3], &attr, repartir, (void*)(&clienteMotorista4[i]));
 
     }
@@ -421,7 +433,7 @@ int main(){
         for (int j = 0; j < clientes[i].cantidadProductos; j++)
         {
             Producto prod = clientes[i].productos[j];
-            cout << "\t" << prod.nombre << ": Q." << prod.precio << endl;
+            cout << "\t-> " << prod.nombre << ": Q." << prod.precio << endl;
         }
         cout << "\nSubtotal de la orden: Q." << clientes[i].subtotal << endl;
     }
