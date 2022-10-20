@@ -147,7 +147,7 @@ double determinar_distancia(int zona){
 }
 
 void imprimir_catalogo(){
-    cout << "------------------------------------CATÁLOGO DE PRODUCTOS------------------------------------" << endl;
+    cout << "\n------------------------------------CATÁLOGO DE PRODUCTOS------------------------------------" << endl;
     for (int i = 0; i < 24; i++)
     {
         Producto prod = catalogo[i];
@@ -368,8 +368,7 @@ int main(){
         clienteMotorista4[i] = clientes[i+n1+n2+n3];
     }
     
-    // Repartir
-    
+    // Repartira todos los clientes
     for(int i=0; i<n1; i++){
         cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<" minutos"<<endl;
         rc = pthread_create(&tid[0], &attr, repartir, (void*)(&clienteMotorista1[i]));
@@ -396,17 +395,11 @@ int main(){
     
     for (int i=0; i<NTHREADS; i++) {
         rc = pthread_join(tid[i], nullptr);
-        /*
-        if (rc) {
-        printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
-        exit(-1); //salir del programa
-        }*/
     }
     
 
     
     // Calcular el total vendido
-
     for (int j = 0; j < cant_clientes; j++)
     {
         rc = pthread_create(&tid[0], &attr, SubtotalCliente, (void*)(&clientes[j]));
