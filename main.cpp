@@ -39,15 +39,14 @@ struct Cliente{ //estructura de los clientes
 };
 
 Producto catalogo[] = {
-
     {"Papel higiénico pack 6 rollos", 30.00},
     {"Pechugas de pollo 1lb", 25.00},
     {"Camarones 1lb", 15.00},
     {"Crema humectante 400ml", 80.00},
     {"Tortrix limón pack 6 bolsas", 30.00},
-    {"Coca-cola pack 6 latas", 40.00},
+    {"Coca-Cola pack 6 latas", 40.00},
     {"Desodorante 150mL", 30.00},
-    {"Shampoo 1l", 60.00},
+    {"Shampoo 1L", 60.00},
     {"XL Sour Blast 750mL", 70.00},
     {"Cerveza Gallo pack 15 latas", 110.00},
     {"Cigarros Malboro Cajetilla", 28.00},
@@ -278,6 +277,65 @@ int main(){
         exit(-1); //salir del programa
         }
     }
+
+    // Funcion para calcular el total de clientes por operador.
+    int n1;
+    int n2;
+    int n3;
+    int n4;
+
+    if (cant_clientes > 4){
+        n1 = cant_clientes / 4;
+        n2 = cant_clientes / 4;
+        n3 = cant_clientes / 4;
+        n4 = (cant_clientes / 4) + (cant_clientes % 4);
+    }
+
+    if (cant_clientes == 4){ // mas de algo va a servir esto.
+        n1 = 1;
+        n2 = 1;
+        n3 = 1;
+        n4 = 1;
+    }
+
+    if (cant_clientes < 4){
+        if(cant_clientes == 1){
+            n1 = 1;
+            n2 = 0;
+            n3 = 0;
+            n4 = 0;
+        } else if (cant_clientes == 2){
+            n1 = 1;
+            n2 = 1;
+            n3 = 0;
+            n4 = 0;
+        } else if (cant_clientes == 3){
+            n1 = 1;
+            n2 = 1;
+            n3 = 1;
+            n4 = 0;
+        }
+    }
+
+
+    /**
+     * si cantidad clientes < 4
+     *  lo de arriba.
+     *
+     *  Si hay menos de 4 clientes, no sería más fácil usar un case? Digamos
+     *  que hay solo2, entonces solo usamos dos motoristas.
+     *
+     *  En realidad, nos sale hasta mas "caro" usar mas de un solo motorista para cada cliente.
+     *
+     */
+
+
+    Cliente clienteMotorista1[n1];
+    Cliente clienteMotorista2[n2];
+    Cliente clienteMotorista3[n3];
+    Cliente clienteMotorista4[n4];
+
+    
 
     // Calcular el total vendido
     for (int i=0; i<NTHREADS; i++) {
