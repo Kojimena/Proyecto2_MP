@@ -40,6 +40,7 @@ struct Cliente{ //estructura de los clientes
     double tiempo;
     double subtotal;
     double distancia;
+    int moto;
 };
 
 //Catalogo de productos
@@ -198,7 +199,7 @@ void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
 void* repartir(void *args){
     Cliente *clientesRepartir = (Cliente*) args;
     sleep(clientesRepartir->tiempo);  // Se simulará el tiempo con la relación de 1 minuto == 1 segundo en sleep
-    cout << "Se ha realizado la entrega de: " << clientesRepartir->nombre << endl;    
+    cout << "Moto #"<< clientesRepartir->moto << " ha realizado la entrega de: " << clientesRepartir->nombre << endl;
 }
 
 
@@ -362,50 +363,58 @@ int main(){
         }
     }
 
-    Cliente clienteMotorista1[n1];
-    Cliente clienteMotorista2[n2];
-    Cliente clienteMotorista3[n3];
-    Cliente clienteMotorista4[n4];
+    Cliente clientesMotorista1[n1];
+    Cliente clientesMotorista2[n2];
+    Cliente clientesMotorista3[n3];
+    Cliente clientesMotorista4[n4];
     
 
     // asignar los clientes a los arrays.
     for(int i = 0; i < n1; i++){
-        clienteMotorista1[i] = clientes[i];
+        clientesMotorista1[i] = clientes[i];
     }
 
     for(int i = 0; i < n2; i++){
-        clienteMotorista2[i] = clientes[i+n1];
+        clientesMotorista2[i] = clientes[i + n1];
     }
 
     for(int i = 0; i < n3; i++){
-        clienteMotorista3[i] = clientes[i+n1+n2];
+        clientesMotorista3[i] = clientes[i + n1 + n2];
     }
 
     for(int i = 0; i < n4; i++){
-        clienteMotorista4[i] = clientes[i+n1+n2+n3];
+        clientesMotorista4[i] = clientes[i + n1 + n2 + n3];
     }
     
     // Repartir a todos los clientes
     // Moto 1
     for(int i=0; i<n1; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<" minutos"<<endl;
-        rc = pthread_create(&tid[0], &attr, repartir, (void*)(&clienteMotorista1[i]));
+        Cliente cliente1 = clientesMotorista1[i];
+        cout << "El tiempo a entregar para " << cliente1.nombre << " es de " << cliente1.tiempo << " minutos" << endl;
+        clientesMotorista1[i].moto = 1;
+        pthread_create(&tid[0], &attr, repartir, (void *) (&clientesMotorista1[i]));
     }
     // Moto 2    
     for(int i=0; i<n2; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista2[i].nombre << " es de " << clienteMotorista2[i].tiempo<<" minutos"<<endl;
-        rc = pthread_create(&tid[1], &attr, repartir, (void*)(&clienteMotorista2[i]));
+        Cliente cliente2 = clientesMotorista2[i];
+        cout << "El tiempo a entregar para " << cliente2.nombre << " es de " << cliente2.tiempo << " minutos" << endl;
+        clientesMotorista2[i].moto = 2;
+        pthread_create(&tid[1], &attr, repartir, (void *) (&clientesMotorista2[i]));
     }
     // Moto 3
     for(int i=0; i<n3; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista3[i].nombre << " es de " << clienteMotorista3[i].tiempo<<" minutos"<<endl;
-        rc = pthread_create(&tid[2], &attr, repartir, (void*)(&clienteMotorista3[i]));
+        Cliente cliente3 = clientesMotorista3[i];
+        cout << "El tiempo a entregar para " << cliente3.nombre << " es de " << cliente3.tiempo << " minutos" << endl;
+        clientesMotorista3[i].moto = 3;
+        pthread_create(&tid[2], &attr, repartir, (void *) (&clientesMotorista3[i]));
 
     }
     // Moto 4
     for(int i=0; i<n4; i++){
-        cout<<"El tiempo a entregar para " << clienteMotorista1[i].nombre << " es de " << clienteMotorista1[i].tiempo<<" minutos"<<endl;
-        rc = pthread_create(&tid[3], &attr, repartir, (void*)(&clienteMotorista4[i]));
+        Cliente cliente4 = clientesMotorista4[i];
+        cout << "El tiempo a entregar para " << cliente4.nombre << " es de " << cliente4.tiempo << " minutos" << endl;
+        clientesMotorista4[i].moto = 4;
+        pthread_create(&tid[3], &attr, repartir, (void *) (&clientesMotorista4[i]));
 
     }
     
