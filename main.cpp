@@ -453,7 +453,7 @@ int main(){
 
     // Mensajes de salida
     cout<<"\nEl total de ventas del día es de: Q." << ventas << endl;
-    cout<<"\nSe han termiado de repartir los pedidos"<< endl;
+    cout<<"\nSe han terminado de repartir los pedidos"<< endl;
     cout<<"Gracias por usar el sistema de pedidos PanaPedidos"<< endl;
     cout<<"Hasta pronto!"<< endl;
 
