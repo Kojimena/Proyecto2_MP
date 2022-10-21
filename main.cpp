@@ -366,11 +366,6 @@ int main(){
         }
     }
 
-//    Cliente clientesMotorista1[n1];
-//    Cliente clientesMotorista2[n2];
-//    Cliente clientesMotorista3[n3];
-//    Cliente clientesMotorista4[n4];
-
     vector<Cliente> clientesMotorista1;
     vector<Cliente> clientesMotorista2;
     vector<Cliente> clientesMotorista3;
