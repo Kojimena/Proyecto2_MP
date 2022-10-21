@@ -157,7 +157,7 @@ void imprimir_catalogo(){ //funcion para imprimir el catalogo de productos
 }
 
 //función para calcular el subtotal del pedido de cada clliente
-void* SubtotalCliente(void *args){ // recibe como parámetros struct Cliente
+void* subtotalCliente(void *args){ // recibe como parámetros struct Cliente
     Cliente *cliente = (Cliente*) args;
     double subtotal = 0;
     pthread_mutex_lock(&mutex);
@@ -385,14 +385,12 @@ int main(){
     for (int i=0; i<NTHREADS; i++) {
         rc = pthread_join(tid[i], nullptr);
     }
-    
-    
-    for (int j = 0; j < cant_clientes; j++)
-    {
-        rc = pthread_create(&tid[0], &attr, SubtotalCliente, (void*)(&clientes[j]));
-    }    
 
-    
+    // Subtotal de cada cliente
+    for (int i = 0; i < cant_clientes; i++)
+    {
+        rc = pthread_create(&tid[i%NTHREADS], &attr, subtotalCliente, (void *) (&clientes[i]));
+    }
     for (int i=0; i<NTHREADS; i++) {
         rc = pthread_join(tid[i], nullptr);
     }
