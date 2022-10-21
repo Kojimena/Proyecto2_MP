@@ -39,6 +39,7 @@ struct Cliente{ //estructura de los clientes
     vector<Producto> productos;
     double tiempo;
     double subtotal;
+    double distancia;
 };
 
 //Catalogo de productos
@@ -69,7 +70,9 @@ Producto catalogo[] = {
     {"Vodka Smirnoff 750 ml", 130.00}
 };
 
-double determinar_distancia(int zona){ //funcion para determinar la distancia de entrega
+void* determinar_distancia(void *args){ //funcion para determinar la distancia de entrega
+    Cliente *cliente = (Cliente*) args;
+    int zona = cliente->zona_entrega;
     double km = 0.0;
     switch (zona)
     {
@@ -143,7 +146,7 @@ double determinar_distancia(int zona){ //funcion para determinar la distancia de
         km = -1;
         break;
     }
-    return km;
+    cliente->distancia = km;
 }
 
 void imprimir_catalogo(){ //funcion para imprimir el catalogo de productos
@@ -173,7 +176,7 @@ void* tiempo_entrega(void *args){ // recibe como parámetros struct Cliente
     Cliente *cliente = (Cliente*) args;
     // obtener la zona_entrega del struct
     int zona = cliente->zona_entrega;
-    double distancia = determinar_distancia(zona);
+    double distancia = cliente->distancia;
     if (distancia <= 0){ // si la zona no existe
         cout << "Zona sin cobertura" << endl;
         return nullptr;
@@ -266,6 +269,26 @@ int main(){
         else{
             cont = false;
         }        
+    }
+
+    // Calcular los tiempos de entrega para cada cliente
+    for (int i=0; i<NTHREADS; i++) {
+        for (int j = 0; j < cant_clientes; ++j) {
+            rc = pthread_create(&tid[i], &attr, determinar_distancia, (void*)(&clientes[j]));
+        }
+
+        // La variable rc recibe errores en formato entero
+        if (rc) {
+            printf("ERROR; return code from pthread_create() is %d\n", rc); //si hay error, imprimir el error
+            exit(-1); //salir del programa
+        }
+    }
+    for (int i=0; i<NTHREADS; i++) {
+        rc = pthread_join(tid[i], nullptr);
+        if (rc) {
+        printf("ERROR; return code from pthread_join() is %d\n", rc); //si hay error, imprimir el error
+        exit(-1); //salir del programa
+        }
     }
 
     // Calcular los tiempos de entrega para cada cliente
