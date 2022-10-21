@@ -396,7 +396,7 @@ int main(){
     }
 
     // Resumen de ventas
-    cout << "Facturas" << endl;
+    cout << "\n\nFacturas" << endl;
     double ventas = 0;
     for (int i = 0; i < cant_clientes; i++)
     {
