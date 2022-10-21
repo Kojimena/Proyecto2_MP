@@ -70,7 +70,19 @@ Producto catalogo[] = {
     {"Vodka Smirnoff 750 ml", 130.00}
 };
 
-void* determinar_distancia(void *args){ //funcion para determinar la distancia de entrega
+//funcion para imprimir el catalogo de productos
+void imprimir_catalogo(){
+    cout << "\n------------------------------------CATÁLOGO DE PRODUCTOS------------------------------------" << endl;
+    for (int i = 0; i < 24; i++)
+    {
+        Producto prod = catalogo[i];
+        cout<< (i+1)<<". " <<prod.nombre << ": Q." << prod.precio <<endl;
+    }
+    cout << "---------------------------------------------------------------------------------------------" << endl;
+}
+
+//funcion para determinar la distancia de entrega
+void* determinar_distancia(void *args){
     Cliente *cliente = (Cliente*) args;
     int zona = cliente->zona_entrega;
     double km = 0.0;
@@ -146,17 +158,9 @@ void* determinar_distancia(void *args){ //funcion para determinar la distancia d
         km = -1;
         break;
     }
+    pthread_mutex_lock(&mutex);
     cliente->distancia = km;
-}
-
-void imprimir_catalogo(){ //funcion para imprimir el catalogo de productos
-    cout << "\n------------------------------------CATÁLOGO DE PRODUCTOS------------------------------------" << endl;
-    for (int i = 0; i < 24; i++)
-    {
-        Producto prod = catalogo[i];
-        cout<< (i+1)<<". " <<prod.nombre << ": Q." << prod.precio <<endl;
-    }
-    cout << "---------------------------------------------------------------------------------------------" << endl;
+    pthread_mutex_unlock(&mutex);
 }
 
 //función para calcular el subtotal del pedido de cada clliente
